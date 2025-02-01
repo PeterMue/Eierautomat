@@ -1,0 +1,3 @@
+[submodule "lib/EEPROM-Storage"]
+	path = lib/EEPROM-Storage
+	url = https://github.com/porrey/EEPROM-Storage.git
