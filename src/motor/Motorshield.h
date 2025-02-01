@@ -9,6 +9,6 @@ class Motorshield {
 
    public:
     // Static constant members for channelA and channelB
-    static const Motor channelA() { return Motor(12, 3, 9, A0); }
-    static const Motor channelB() { return Motor(13, 11, 8, A1); }
+    static Motor *const channelA;
+    static Motor *const channelB;
 };
