@@ -2,37 +2,70 @@
 
 // clang-format off
 MENU_SCREEN(infoScreen, infoScreenItems,
-    //         |----------------|
+    //        |>--------------+|
     ITEM_BASIC("Version 1.0"),
-    //         |----------------|
-    ITEM_VALUE("Total Sold", STORAGE.totalSoldItems, "%d"),
-    //         |----------------|
-    ITEM_VALUE("Sold Items", STORAGE.soldItems, "%d"),
-    //         |----------------|
+    //        |>--------------+|
+    ITEM_VALUE("Total sold", STORAGE.totalSoldItems, "%d"),
+    //        |>--------------+|
+    ITEM_VALUE("Sold items", STORAGE.soldItems, "%d"),
+    //        |>--------------+|
+    ITEM_BACK()
+);
+MENU_SCREEN(coinScreen, coinScreenItems,
+    //         |>--------------+|
+    ITEM_WIDGET("interval",
+        [](unsigned int delay) { STORAGE.coinPulseMaxDelay = delay; },
+        WIDGET_RANGE(STORAGE.coinPulseMaxDelay.get(), 10U, 10U, 500U, "%d ms")),
+    //         |>--------------+|
+    ITEM_WIDGET("1 pulse",
+        [](unsigned int value) { STORAGE.coin1value = value; },
+        WIDGET_RANGE(STORAGE.coin1value.get(), 5U, 0U, 200U, "%03d ct")),
+    //         |>--------------+|
+    ITEM_WIDGET("2 pulse",
+        [](unsigned int value) { STORAGE.coin2value = value; },
+        WIDGET_RANGE(STORAGE.coin2value.get(), 5U, 0U, 200U, "%03d ct")),
+    //         |>--------------+|
+    ITEM_WIDGET("3 pulse",
+        [](unsigned int value) { STORAGE.coin3value = value; },
+        WIDGET_RANGE(STORAGE.coin3value.get(), 5U, 0U, 200U, "%03d ct")),
+    //         |>--------------+|
+    ITEM_WIDGET("4 pulse",
+        [](unsigned int value) { STORAGE.coin4value = value; },
+        WIDGET_RANGE(STORAGE.coin4value.get(), 5U, 0U, 200U, "%03d ct")),
+    //         |>--------------+|
+    ITEM_WIDGET("5 pulse",
+        [](unsigned int value) { STORAGE.coin5value = value; },
+        WIDGET_RANGE(STORAGE.coin5value.get(), 5U, 0U, 200U, "%03d ct")),
+    //         |>--------------+|
+    ITEM_WIDGET("6 pulse",
+        [](unsigned int value) { STORAGE.coin6value = value; },
+        WIDGET_RANGE(STORAGE.coin6value.get(), 5U, 0U, 200U, "%03d ct")),
+    //          |>--------------+|
     ITEM_BACK()
 );
 MENU_SCREEN(settingsScreen, settingsScreenItems,
-    //          |----------------|
-    ITEM_WIDGET("Disp.speed",
+    //         |>--------------+|
+    ITEM_WIDGET("speed",
         [](float speed) { STORAGE.dispenserSpeed = speed; },
          WIDGET_RANGE(STORAGE.dispenserSpeed.get(), 0.1f, 0.0f, 1.0f, "%.1f")),
-    //          |----------------|
-    ITEM_WIDGET("Disp.retry",
+    //         |>--------------+|
+    ITEM_WIDGET("retries",
         [](unsigned int attempts) { STORAGE.maxDispenseAttempts = attempts; },
         WIDGET_RANGE(STORAGE.maxDispenseAttempts.get(), 1U, 1U, 10U, "%d")),
-    //          |----------------|
-    ITEM_WIDGET("Removal",
+    //         |>--------------+|
+    ITEM_WIDGET("wait",
         [](unsigned int time) { STORAGE.removalWaitTime = time; },
         WIDGET_RANGE(STORAGE.removalWaitTime.get(), 250U, 1000U, 10000U, "%d ms")),
-    //          |----------------|
-    ITEM_WIDGET("Stall curr",
+    //         |>--------------+|
+    ITEM_WIDGET("block",
         [](float current) { STORAGE.motorBlockCurrent = current; },
         WIDGET_RANGE(STORAGE.motorBlockCurrent.get(), 0.05f, 0.0f, 2.0f, "%.2f A")),
-    //          |----------------|
-    ITEM_WIDGET("Inrush wait",
+    //         |>--------------+|
+    ITEM_WIDGET("inrush",
         [](unsigned int time) { STORAGE.motorBlockInrushWait = time; },
         WIDGET_RANGE(STORAGE.motorBlockInrushWait.get(), 5U, 0U, 250U, "%d ms")),
-    //          |----------------|
+    //         |>--------------+|
+    ITEM_SUBMENU("Coin config", coinScreen),
     ITEM_BACK()
 );
 MENU_SCREEN( mainScreen, mainItems,
