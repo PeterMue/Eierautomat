@@ -20,6 +20,7 @@ CoinAcceptor::CoinAcceptor(uint8_t pulsePin)
 
 void CoinAcceptor::begin() { attachInterrupt(digitalPinToInterrupt(pulsePin), pulseHandler, FALLING); }
 
+#ifdef __PULSE_HANLDER_ALT__
 void CoinAcceptor::pulseHandler() {
     instance->pulses++;
     instance->lastPulseMillis = millis();
@@ -31,10 +32,32 @@ void CoinAcceptor::loop() {
     if (delta > pulseMaxDelay) {
         if (pulses > 0 && pulses < 7) {
             balance += values[pulses];
+            Debug::log("Coin accepted: " + String(values[pulses]) + " EUR");
         }
         pulses = 0;
     }
 }
+#else   // __PULSE_HANLDER_ALT__
+
+void CoinAcceptor::pulseHandler() {
+    instance->pulses++;
+    unsigned long currentMillis = millis();
+    if (currentMillis - instance->lastPulseMillis > instance->pulseMaxDelay) {
+        instance->lastPulseCount = instance->pulses;
+        instance->pulses = 0;
+    }
+}
+
+void CoinAcceptor::loop() {
+    if (lastPulseCount > 0) {
+        if (lastPulseCount < 7) {
+            balance += values[lastPulseCount];
+            Debug::log("Coin accepted: " + String(values[lastPulseCount]) + " EUR");
+        }
+        lastPulseCount = 0;  // Reset after processing
+    }
+}
+#endif  // __PULSE_HANLDER_ALT__
 
 unsigned int CoinAcceptor::getBalance() { return balance; }
 
