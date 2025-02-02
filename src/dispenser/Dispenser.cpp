@@ -103,9 +103,15 @@ void Dispenser::dispense() {
     }
 }
 
+bool Dispenser::isReady() { return state == IDLE && !isEmpty(); }
+
+bool Dispenser::isEmpty() { return emptySwitch->on(); }
+
 bool Dispenser::isError() { return state == ERROR; }
 
 void Dispenser::reset() { state = IDLE; }
+
+Dispenser::State Dispenser::getState() { return state; }
 
 Dispenser::Info Dispenser::getInfo() { return {STORAGE.soldItems.get()}; }
 

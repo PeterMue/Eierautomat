@@ -23,6 +23,11 @@ class Dispenser {
     bool isError();
     void reset();
 
+    bool isReady();
+
+    bool isEmpty();
+
+    State getState();
     Info getInfo();
 
    private:
