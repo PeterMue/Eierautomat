@@ -119,6 +119,9 @@ void Display::loop() {
 }
 
 void Display::setText(String text) {
+    if (text == this->text) {
+        return;
+    }
     this->text = text;
     if (!menuActive) {
         lcd.clear();
