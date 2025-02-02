@@ -1,6 +1,6 @@
 #include "CoinAcceptor.h"
 
-CoinAcceptor *const CoinAcceptor::instance = new CoinAcceptor(COIN_PIN_PULSE);
+CoinAcceptor *const CoinAcceptor::instance = new CoinAcceptor(COIN_ACCEPTOR_PULSE_PIN);
 
 CoinAcceptor::CoinAcceptor(uint8_t pulsePin)
     : pulsePin(pulsePin),

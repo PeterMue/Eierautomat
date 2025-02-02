@@ -30,3 +30,5 @@
 #define LCD_COLS 16
 #define LCD_ROWS 2
 #define DISPLAY_FPS 4
+// Coin acceptor
+#define COIN_ACCEPTOR_PULSE_PIN 18
