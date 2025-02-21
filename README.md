@@ -208,10 +208,10 @@ The Eierautomat project is an automated egg vending machine designed to provide 
 
 # TODO
 
-[x] Reset account balance after n time.
-[x] Switch manual dispense
-[x] Reset
-[x] Total counter + resettable counter
-[ ] Shielded cable (CoinAcceptor)
-[x] VCC cable (relais card)
-[x] Detach interrupt when coin acceptor is disabled
+* [x] Reset account balance after n time.
+* [x] Switch manual dispense
+* [x] Reset
+* [x] Total counter + resettable counter
+* [ ] Shielded cable (CoinAcceptor)
+* [x] VCC cable (relais card)
+* [x] Detach interrupt when coin acceptor is disabled
