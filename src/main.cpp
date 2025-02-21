@@ -19,6 +19,13 @@ enum State { IDLE, AWAITING_PAYMENT, DISPENSING, EMPTY, OUT_OF_ORDER } state;
 void setup() {
     Serial.begin(9600);
 
+    # ifdef CLEAR_EEPROM
+    Serial.println("Clearing EEPROM... (may take a while)");
+    for (uint16_t i = 0 ; i < EEPROM.length() ; i++) {
+        EEPROM.write(i, 0xFF);
+    }
+    #endif
+
     // initialization must happen here, otherwise something strange happens
     storage = Storage::instance;
     dispensers = Dispensers::instance;
