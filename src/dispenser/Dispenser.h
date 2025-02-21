@@ -50,7 +50,7 @@ class Dispenser {
 
     State state;
 
-    Timer<1, millis, Dispenser *> timer;
+    Timer<2, millis, Dispenser *> timer;
     unsigned short dispenseAttempt;
 
     void updateComponents();
