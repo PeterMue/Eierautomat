@@ -7,9 +7,9 @@
 #include <ItemValue.h>
 #include <ItemWidget.h>
 #include <LcdMenu.h>
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 #include <SimpleRotary.h>
-#include <display/LiquidCrystalAdapter.h>
+#include <display/LiquidCrystal_I2CAdapter.h>
 #include <input/SimpleRotaryAdapter.h>
 #include <renderer/CharacterDisplayRenderer.h>
 #include <widget/WidgetBool.h>
@@ -26,6 +26,8 @@ class Display {
     void showMenu();
     void hideMenu();
     void setText(String text);
+    void enableProgressIndicator();
+    void disableProgressIndicator();
 
     static Display* const instance;
 
@@ -33,8 +35,8 @@ class Display {
     Display(MenuScreen* screen);
     MenuScreen* screen;
 
-    LiquidCrystal lcd;
-    LiquidCrystalAdapter lcdAdapter;
+    LiquidCrystal_I2C lcd;
+    LiquidCrystal_I2CAdapter lcdAdapter;
     CharacterDisplayRenderer renderer;
 
     LcdMenu menu;
@@ -46,4 +48,9 @@ class Display {
     String text;
 
     unsigned long lastRender;
+
+    bool progressIndicatorEnabled;
+
+    char progressBar[LCD_COLS + 1] = {' '};
+    short progressBarIndex = 0;
 };

@@ -13,22 +13,19 @@
 #define DISPENSER_B_MAX_LIMIT_SWITCH_PIN 35
 #define DISPENSER_B_MAX_LIMIT_SWITCH2_PIN 36
 // Rotary encoder
-#define ROTARY_ENC_PIN_CLK 40
-#define ROTARY_ENC_PIN_DT 41
-#define ROTARY_ENC_PIN_SW 42
+#define ROTARY_ENC_PIN_CLK 18
+#define ROTARY_ENC_PIN_DT 19
+#define ROTARY_ENC_PIN_SW 17
 #define ROTARY_ENC_DEBOUNCE_DELAY 10
 #define ROTARY_ENC_ERROR_DELAY 250
+
 // Settings
 #define SETTINGS_MENU_LONG_PRESS_MS 2000
 // Display
-#define LCD_PIN_RS 12
-#define LCD_PIN_EN 11
-#define LCD_PIN_D4 5
-#define LCD_PIN_D5 4
-#define LCD_PIN_D6 3
-#define LCD_PIN_D7 2
+#define LCD_I2C_ADDR 0x27
 #define LCD_COLS 16
 #define LCD_ROWS 2
 #define DISPLAY_FPS 4
+
 // Coin acceptor
 #define COIN_ACCEPTOR_PULSE_PIN 18

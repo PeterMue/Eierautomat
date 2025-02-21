@@ -80,13 +80,16 @@ Display* const Display::instance = new Display(mainScreen);
 
 Display::Display(MenuScreen* screen)
     : screen(screen),
-      lcd(LiquidCrystal(LCD_PIN_RS, LCD_PIN_EN, LCD_PIN_D4, LCD_PIN_D5, LCD_PIN_D6, LCD_PIN_D7)),
-      lcdAdapter(LiquidCrystalAdapter(&lcd, LCD_COLS, LCD_ROWS)),
+      lcd(LiquidCrystal_I2C(LCD_I2C_ADDR, LCD_COLS, LCD_ROWS)),
+      lcdAdapter(LiquidCrystal_I2CAdapter(&lcd)),
       renderer(CharacterDisplayRenderer(&lcdAdapter, LCD_COLS, LCD_ROWS)),
       menu(LcdMenu(renderer)),
       rotary(SimpleRotary(ROTARY_ENC_PIN_CLK, ROTARY_ENC_PIN_DT, ROTARY_ENC_PIN_SW)),
       rotaryAdapter(SimpleRotaryAdapter(&menu, &rotary)),
-      menuActive(false) {
+      menuActive(false),
+      lastRender(0),
+      progressIndicatorEnabled(false),
+      progressBarIndex(0) {
     rotary.setDebounceDelay(ROTARY_ENC_DEBOUNCE_DELAY);
     rotary.setErrorDelay(ROTARY_ENC_ERROR_DELAY);
     rotary.setTrigger(HIGH);
@@ -112,7 +115,26 @@ void Display::loop() {
         unsigned long now = millis();
         if (now - lastRender > (1000 / DISPLAY_FPS)) {
             lcd.setCursor(0, 0);
-            lcd.write(text.c_str());
+            int newLine = text.indexOf('\n');
+            if(newLine != -1) {
+                lcd.printstr(text.substring(0, newLine).c_str());
+                lcd.setCursor(0, 1);
+                lcd.printstr(text.substring(newLine + 1).c_str());
+            } else {
+                lcd.printstr(text.c_str());
+            }
+            if(progressIndicatorEnabled) {
+                for(int i = 0; i < LCD_COLS; i++) {
+                    progressBar[i] = ' ';
+                }
+                progressBar[LCD_COLS] = '\0';
+                progressBar[progressBarIndex] = '.';
+                progressBar[(progressBarIndex + 1) % LCD_COLS] = '.';
+                progressBar[(progressBarIndex + 2) % LCD_COLS] = '.';
+                progressBarIndex = (progressBarIndex + 1) % LCD_COLS;
+                lcd.setCursor(0, 1);
+                lcd.printstr(progressBar);
+            }
             lastRender = now;
         }
     }
@@ -142,4 +164,22 @@ void Display::hideMenu() {
         menuActive = false;
         menu.hide();
     }
+}
+
+void Display::enableProgressIndicator() {
+    if(progressIndicatorEnabled) {
+        return;
+    }
+    progressIndicatorEnabled = true;
+    progressBarIndex = 0;
+    lastRender = 0;
+}
+
+void Display::disableProgressIndicator() {
+    if(!progressIndicatorEnabled) {
+        return;
+    }
+    progressIndicatorEnabled = false;
+    lcd.clear();
+    lastRender = 0;
 }
