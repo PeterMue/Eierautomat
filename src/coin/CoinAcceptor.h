@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <arduino-timer.h>
 
 #include "Storage.h"
 #include "config.h"
@@ -26,9 +27,17 @@ class CoinAcceptor {
     unsigned int pulseMaxDelay;
     volatile unsigned int pulses;
     volatile unsigned long lastPulseMillis;
-    volatile unsigned int lastPulseCount;
     unsigned int balance;
     unsigned int values[7];
-    volatile bool enabled;
+    volatile bool enabledInternal;
+
+    bool enabled;
+
+    Timer<2, millis, CoinAcceptor *> timer;
+    Timer<2, millis, CoinAcceptor *>::Task balanceResetTask;
+    Timer<2, millis, CoinAcceptor *>::Task enableTask;
+
+    void scheduleBalanceReset();
+
     static void pulseHandler();
 };
