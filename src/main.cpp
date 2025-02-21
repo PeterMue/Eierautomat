@@ -1,33 +1,3 @@
-//#define DEBUG
-#ifdef DEBUG
-#include <Arduino.h>
-#include <avdweb_Switch.h>
-#include "config.h"
-
-
-Switch amin(DISPENSER_A_MIN_LIMIT_SWITCH_PIN, INPUT);
-Switch amax(DISPENSER_A_MAX_LIMIT_SWITCH_PIN, INPUT);
-Switch amax2(DISPENSER_A_MAX_LIMIT_SWITCH2_PIN, INPUT, HIGH);
-
-void setup() {
-    Serial.begin(9600);
-}
-
-unsigned long last = 0;
-
-void loop() {
-    amin.poll();
-    amax.poll();
-    amax2.poll();
-
-    unsigned long now = millis();
-    if(now - last > 500) {
-        last = now;
-        Serial.println("Amin: " + String(amin.on()) + " Amax: " + String(amax.on()) + " Amax2: " + String(amax2.on()));
-    }
-}
-
-#else
 #include <Arduino.h>
 
 #include "Display.h"
@@ -167,4 +137,3 @@ void loop() {
             break;
     };
 }
-#endif
