@@ -8,8 +8,6 @@ struct Storage {
     static Storage *const instance;
 
    public:
-    EEPROMStorage<unsigned int> totalSoldItems;
-    EEPROMStorage<unsigned int> soldItems;
     // dispenser
     EEPROMStorage<float> dispenserSpeed;
     EEPROMStorage<unsigned int> maxDispenseAttempts;
@@ -28,6 +26,30 @@ struct Storage {
     EEPROMStorage<unsigned int> coin6value;
     // price
     EEPROMStorage<unsigned int> price;
+    EEPROMStorage<unsigned int> balanceResetDelay;
+    // statistics
+    EEPROMStorage<unsigned int> sold;
+    EEPROMStorage<unsigned int> total;
 private:
     Storage();
+
+public:
+    void reset() {
+        dispenserSpeed.unset();
+        maxDispenseAttempts.unset();
+        removalWaitTime.unset();
+        motorBlockCurrent.unset();
+        motorBlockInrushWait.unset();
+        coinPulseMaxDelay.unset();
+        coin1value.unset();
+        coin2value.unset();
+        coin3value.unset();
+        coin4value.unset();
+        coin5value.unset();
+        coin6value.unset();
+        price.unset();
+        balanceResetDelay.unset();
+        sold.unset();
+        total.unset();
+    }
 };

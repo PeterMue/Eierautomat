@@ -1,13 +1,21 @@
 #include "Display.h"
 
+unsigned int infoScreen_sold;
+unsigned int infoScreen_total;
+
 // clang-format off
 MENU_SCREEN(infoScreen, infoScreenItems,
     //        |>--------------+|
-    ITEM_BASIC("Version 1.0"),
+    ITEM_VALUE("Sold", infoScreen_sold, "%d"),
     //        |>--------------+|
-    ITEM_VALUE("Total sold", Storage::instance->totalSoldItems, "%d"),
+    ITEM_COMMAND("Reset sold", []() { 
+        Debug::log("Resetting sold items");
+        Storage::instance->sold.set(0);
+    }),
     //        |>--------------+|
-    ITEM_VALUE("Sold items", Storage::instance->soldItems, "%d"),
+    ITEM_VALUE("Total", infoScreen_total, "%d"),
+    //        |>--------------+|
+    ITEM_BASIC(GIT_VERSION),
     //        |>--------------+|
     ITEM_BACK()
 );
@@ -43,11 +51,26 @@ MENU_SCREEN(coinScreen, coinScreenItems,
     //          |>--------------+|
     ITEM_BACK()
 );
+MENU_SCREEN(factoryResetScreen, factoryResetScreenItems,
+    //         |>--------------+|
+    ITEM_COMMAND("Reset",
+        []() {
+            Storage::instance->reset();
+            Display::instance->hideMenu();
+        }),
+    //         |>--------------+|
+    ITEM_BACK()
+);
+
 MENU_SCREEN(settingsScreen, settingsScreenItems,
     //         |>--------------+|
     ITEM_WIDGET("price",
         [](unsigned int price) { Storage::instance->price.set(price); },
          WIDGET_RANGE(Storage::instance->price.get(), 5U, 0U, 2500U, "%03d ct")),
+    //         |>--------------+|
+    ITEM_WIDGET("balance rst",
+        [](unsigned int delay) { Storage::instance->balanceResetDelay.set(delay); },
+        WIDGET_RANGE(Storage::instance->balanceResetDelay.get(), 5U, 0U, 600U, "%d s")),
     //         |>--------------+|
     ITEM_WIDGET("speed",
         [](float speed) { Storage::instance->dispenserSpeed.set(speed); },
@@ -70,6 +93,7 @@ MENU_SCREEN(settingsScreen, settingsScreenItems,
         WIDGET_RANGE(Storage::instance->motorBlockInrushWait.get(), 5U, 0U, 250U, "%d ms")),
     //         |>--------------+|
     ITEM_SUBMENU("Coin config", coinScreen),
+    ITEM_SUBMENU("Factory reset", factoryResetScreen),
     ITEM_BACK()
 );
 MENU_SCREEN( mainScreen, mainItems,
@@ -88,7 +112,8 @@ Display::Display(MenuScreen* screen)
       lcdAdapter(LiquidCrystal_I2CAdapter(&lcd)),
       renderer(CharacterDisplayRenderer(&lcdAdapter, LCD_COLS, LCD_ROWS)),
       menu(LcdMenu(renderer)),
-      rotary(SimpleRotary(ROTARY_ENC_PIN_CLK, ROTARY_ENC_PIN_DT, ROTARY_ENC_PIN_SW)),
+      rotary(SimpleRotary(ROTARY_ENC_PIN_CLK, ROTARY_ENC_PIN_DT,
+                          ROTARY_ENC_PIN_SW)),
       rotaryAdapter(SimpleRotaryAdapter(&menu, &rotary)),
       menuActive(false),
       lastRender(0),
@@ -110,6 +135,8 @@ void Display::begin() {
 }
 
 void Display::loop() {
+    infoScreen_sold = Storage::instance->sold.get();
+    infoScreen_total = Storage::instance->total.get();
     if (menuActive) {
         rotaryAdapter.observe();
         menu.poll(1000);
@@ -120,15 +147,15 @@ void Display::loop() {
         if (now - lastRender > (1000 / DISPLAY_FPS)) {
             lcd.setCursor(0, 0);
             int newLine = text.indexOf('\n');
-            if(newLine != -1) {
+            if (newLine != -1) {
                 lcd.printstr(text.substring(0, newLine).c_str());
                 lcd.setCursor(0, 1);
                 lcd.printstr(text.substring(newLine + 1).c_str());
             } else {
                 lcd.printstr(text.c_str());
             }
-            if(progressIndicatorEnabled) {
-                for(int i = 0; i < LCD_COLS; i++) {
+            if (progressIndicatorEnabled) {
+                for (int i = 0; i < LCD_COLS; i++) {
                     progressBar[i] = ' ';
                 }
                 progressBar[LCD_COLS] = '\0';
@@ -171,7 +198,7 @@ void Display::hideMenu() {
 }
 
 void Display::enableProgressIndicator() {
-    if(progressIndicatorEnabled) {
+    if (progressIndicatorEnabled) {
         return;
     }
     progressIndicatorEnabled = true;
@@ -180,7 +207,7 @@ void Display::enableProgressIndicator() {
 }
 
 void Display::disableProgressIndicator() {
-    if(!progressIndicatorEnabled) {
+    if (!progressIndicatorEnabled) {
         return;
     }
     progressIndicatorEnabled = false;

@@ -2,18 +2,16 @@
 
 Storage *const Storage::instance = new Storage();
 
-Storage::Storage() 
-        : totalSoldItems(0, 0),
-          soldItems(totalSoldItems.nextAddress(), 0),
+Storage::Storage() :
           // dispenser
-          dispenserSpeed(soldItems.nextAddress(), 1.0),
+          dispenserSpeed(1024, 1.0),
           maxDispenseAttempts(dispenserSpeed.nextAddress(), 3),
           removalWaitTime(maxDispenseAttempts.nextAddress(), 3000),
           // motor current
-          motorBlockCurrent(removalWaitTime.nextAddress(), 1.5),
-          motorBlockInrushWait(motorBlockCurrent.nextAddress(), 400),
+          motorBlockCurrent(removalWaitTime.nextAddress(), 0.95),
+          motorBlockInrushWait(motorBlockCurrent.nextAddress(), 200),
           // coin pulses
-          coinPulseMaxDelay(motorBlockCurrent.nextAddress(), 140),
+          coinPulseMaxDelay(motorBlockCurrent.nextAddress(), 250),
           // coin values
           coin1value(coinPulseMaxDelay.nextAddress(), 200),
           coin2value(coin1value.nextAddress(), 100),
@@ -22,7 +20,11 @@ Storage::Storage()
           coin5value(coin4value.nextAddress(), 10),
           coin6value(coin5value.nextAddress(), 0),
           // price
-          price(coin6value.nextAddress(), 350)
+          price(coin6value.nextAddress(), 350),
+          balanceResetDelay(price.nextAddress(), 60),
+          // statistics
+          sold(balanceResetDelay.nextAddress(), 0),
+          total(sold.nextAddress(), 0)
     //
     {
         /* intentionally left blank */

@@ -158,7 +158,7 @@ void Dispenser::reset() { state = IDLE; }
 Dispenser::State Dispenser::getState() { return state; }
 
 Dispenser::Info Dispenser::getInfo() {
-    return {id, Storage::instance->soldItems.get()};
+    return {id, Storage::instance->sold.get()};
 }
 
 bool Dispenser::isMinLimitSwitchOn() { return minLimitSwitch->on(); }

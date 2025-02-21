@@ -86,8 +86,9 @@ void loop() {
                         Debug::stateTransition("DISPENSING", state, "Dispenser completed");
                         activeDispenser = nullptr;
                         dispensers->swap();
-                        storage->soldItems += 1;
-                        storage->totalSoldItems += 1;
+                        storage->sold.set(storage->sold.get() + 1);
+                        storage->total.set(storage->total.get() + 1);
+                        Debug::log("Sold items: " + String(storage->sold.get()) + " (" + String(storage->total.get()) + " total)");
                         break;
                     case Dispenser::DISPENSE:
                     case Dispenser::RECOVER:

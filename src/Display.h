@@ -18,6 +18,7 @@
 
 #include "Storage.h"
 #include "config.h"
+#include "debug.h"
 
 class Display {
    public:
@@ -53,4 +54,5 @@ class Display {
 
     char progressBar[LCD_COLS + 1] = {' '};
     short progressBarIndex = 0;
+
 };
