@@ -1,63 +1,60 @@
 #include "CoinAcceptor.h"
 
-CoinAcceptor *const CoinAcceptor::instance = new CoinAcceptor(COIN_ACCEPTOR_PULSE_PIN);
+CoinAcceptor *const CoinAcceptor::instance = new CoinAcceptor(COIN_ACCEPTOR_PULSE_PIN, COIN_ACCEPTOR_ENABLE_PIN);
 
-CoinAcceptor::CoinAcceptor(uint8_t pulsePin)
+CoinAcceptor::CoinAcceptor(uint8_t pulsePin, uint8_t enable_pin)
     : pulsePin(pulsePin),
-      pulseMaxDelay(STORAGE.coinPulseMaxDelay.get()),
+      enablePin(enable_pin),
+      pulseMaxDelay(200),
       pulses(0),
       lastPulseMillis(0),
       balance(0),
-      values{0,  // 0-index is not used
-             STORAGE.coin1value.get(),
-             STORAGE.coin2value.get(),
-             STORAGE.coin3value.get(),
-             STORAGE.coin4value.get(),
-             STORAGE.coin5value.get(),
-             STORAGE.coin6value.get()} {
-    pinMode(pulsePin, INPUT);  // TODO: pull-up?
+      values{0},
+      enabled(false) {
+    pinMode(pulsePin, INPUT);
+    pinMode(enablePin, OUTPUT);
 }
 
-void CoinAcceptor::begin() { attachInterrupt(digitalPinToInterrupt(pulsePin), pulseHandler, FALLING); }
+void CoinAcceptor::begin() { 
+    attachInterrupt(digitalPinToInterrupt(pulsePin), pulseHandler, FALLING); 
+    pulseMaxDelay = Storage::instance->coinPulseMaxDelay.get();
+    values[0] = 0;
+    values[1] = Storage::instance->coin1value.get();
+    values[2] = Storage::instance->coin2value.get();
+    values[3] = Storage::instance->coin3value.get();
+    values[4] = Storage::instance->coin4value.get();
+    values[5] = Storage::instance->coin5value.get();
+    values[6] = Storage::instance->coin6value.get();
 
-#ifdef __PULSE_HANLDER_ALT__
+    enable();
+
+    Debug::log("Coin acceptor initialized");
+    Debug::log("Coins: [1] " + String(values[1]) + " EUR, [2] " + String(values[2]) + " EUR, [3] " + String(values[3]) + " EUR, [4] " + String(values[4]) + " EUR, [5] " + String(values[5]) + " EUR, [6] " + String(values[6]) + " EUR");
+}
+
 void CoinAcceptor::pulseHandler() {
-    instance->pulses++;
-    instance->lastPulseMillis = millis();
+    if(instance->enabled) {
+        instance->pulses++;
+        instance->lastPulseMillis = millis();
+    }
 }
 
 void CoinAcceptor::loop() {
     unsigned long currentMillis = millis();
-    unsigned int delta = currentMillis - lastPulseMillis;
-    if (delta > pulseMaxDelay) {
-        if (pulses > 0 && pulses < 7) {
-            balance += values[pulses];
-            Debug::log("Coin accepted: " + String(values[pulses]) + " EUR");
+    digitalWrite(enablePin, enabled ? HIGH : LOW);
+    if(enabled) {
+        noInterrupts();
+        unsigned int delta = currentMillis - lastPulseMillis;
+        if (delta > pulseMaxDelay) {
+            if (pulses > 0 && pulses < 7) {
+                balance += values[pulses];
+                Debug::log("Coin accepted: " + String(values[lastPulseCount]) + " EUR");
+            }
+            pulses = 0;
         }
-        pulses = 0;
+        interrupts();
     }
 }
-#else   // __PULSE_HANLDER_ALT__
-
-void CoinAcceptor::pulseHandler() {
-    instance->pulses++;
-    unsigned long currentMillis = millis();
-    if (currentMillis - instance->lastPulseMillis > instance->pulseMaxDelay) {
-        instance->lastPulseCount = instance->pulses;
-        instance->pulses = 0;
-    }
-}
-
-void CoinAcceptor::loop() {
-    if (lastPulseCount > 0) {
-        if (lastPulseCount < 7) {
-            balance += values[lastPulseCount];
-            Debug::log("Coin accepted: " + String(values[lastPulseCount]) + " EUR");
-        }
-        lastPulseCount = 0;  // Reset after processing
-    }
-}
-#endif  // __PULSE_HANLDER_ALT__
 
 unsigned int CoinAcceptor::getBalance() { return balance; }
 
@@ -68,3 +65,14 @@ bool CoinAcceptor::withdraw(unsigned int amount) {
     }
     return false;
 }
+
+void CoinAcceptor::enable() { 
+    if(this->enabled) {
+        return;
+    } 
+    this->enabled = true; 
+    this->pulses = 0;
+    this->lastPulseCount = 0;
+}
+
+void CoinAcceptor::disable() { this->enabled = false; }

@@ -5,65 +5,69 @@ MENU_SCREEN(infoScreen, infoScreenItems,
     //        |>--------------+|
     ITEM_BASIC("Version 1.0"),
     //        |>--------------+|
-    ITEM_VALUE("Total sold", STORAGE.totalSoldItems, "%d"),
+    ITEM_VALUE("Total sold", Storage::instance->totalSoldItems, "%d"),
     //        |>--------------+|
-    ITEM_VALUE("Sold items", STORAGE.soldItems, "%d"),
+    ITEM_VALUE("Sold items", Storage::instance->soldItems, "%d"),
     //        |>--------------+|
     ITEM_BACK()
 );
 MENU_SCREEN(coinScreen, coinScreenItems,
     //         |>--------------+|
     ITEM_WIDGET("interval",
-        [](unsigned int delay) { STORAGE.coinPulseMaxDelay = delay; },
-        WIDGET_RANGE(STORAGE.coinPulseMaxDelay.get(), 10U, 10U, 500U, "%d ms")),
+        [](unsigned int delay) { Storage::instance->coinPulseMaxDelay.set(delay); },
+        WIDGET_RANGE(Storage::instance->coinPulseMaxDelay.get(), 10U, 10U, 500U, "%d ms")),
     //         |>--------------+|
     ITEM_WIDGET("1 pulse",
-        [](unsigned int value) { STORAGE.coin1value = value; },
-        WIDGET_RANGE(STORAGE.coin1value.get(), 5U, 0U, 200U, "%03d ct")),
+        [](unsigned int value) { Storage::instance->coin1value.set(value); },
+        WIDGET_RANGE(Storage::instance->coin1value.get(), 5U, 0U, 200U, "%03d ct")),
     //         |>--------------+|
     ITEM_WIDGET("2 pulse",
-        [](unsigned int value) { STORAGE.coin2value = value; },
-        WIDGET_RANGE(STORAGE.coin2value.get(), 5U, 0U, 200U, "%03d ct")),
+        [](unsigned int value) { Storage::instance->coin2value.set(value); },
+        WIDGET_RANGE(Storage::instance->coin2value.get(), 5U, 0U, 200U, "%03d ct")),
     //         |>--------------+|
     ITEM_WIDGET("3 pulse",
-        [](unsigned int value) { STORAGE.coin3value = value; },
-        WIDGET_RANGE(STORAGE.coin3value.get(), 5U, 0U, 200U, "%03d ct")),
+        [](unsigned int value) { Storage::instance->coin3value.set(value); },
+        WIDGET_RANGE(Storage::instance->coin3value.get(), 5U, 0U, 200U, "%03d ct")),
     //         |>--------------+|
     ITEM_WIDGET("4 pulse",
-        [](unsigned int value) { STORAGE.coin4value = value; },
-        WIDGET_RANGE(STORAGE.coin4value.get(), 5U, 0U, 200U, "%03d ct")),
+        [](unsigned int value) { Storage::instance->coin4value.set(value); },
+        WIDGET_RANGE(Storage::instance->coin4value.get(), 5U, 0U, 200U, "%03d ct")),
     //         |>--------------+|
     ITEM_WIDGET("5 pulse",
-        [](unsigned int value) { STORAGE.coin5value = value; },
-        WIDGET_RANGE(STORAGE.coin5value.get(), 5U, 0U, 200U, "%03d ct")),
+        [](unsigned int value) { Storage::instance->coin5value.set(value); },
+        WIDGET_RANGE(Storage::instance->coin5value.get(), 5U, 0U, 200U, "%03d ct")),
     //         |>--------------+|
     ITEM_WIDGET("6 pulse",
-        [](unsigned int value) { STORAGE.coin6value = value; },
-        WIDGET_RANGE(STORAGE.coin6value.get(), 5U, 0U, 200U, "%03d ct")),
+        [](unsigned int value) { Storage::instance->coin6value.set(value); },
+        WIDGET_RANGE(Storage::instance->coin6value.get(), 5U, 0U, 200U, "%03d ct")),
     //          |>--------------+|
     ITEM_BACK()
 );
 MENU_SCREEN(settingsScreen, settingsScreenItems,
     //         |>--------------+|
+    ITEM_WIDGET("price",
+        [](unsigned int price) { Storage::instance->price.set(price); },
+         WIDGET_RANGE(Storage::instance->price.get(), 5U, 0U, 2500U, "%03d ct")),
+    //         |>--------------+|
     ITEM_WIDGET("speed",
-        [](float speed) { STORAGE.dispenserSpeed = speed; },
-         WIDGET_RANGE(STORAGE.dispenserSpeed.get(), 0.1f, 0.0f, 1.0f, "%.1f")),
+        [](float speed) { Storage::instance->dispenserSpeed.set(speed); },
+         WIDGET_RANGE(Storage::instance->dispenserSpeed.get(), 0.1f, 0.0f, 1.0f, "%.1f")),
     //         |>--------------+|
     ITEM_WIDGET("retries",
-        [](unsigned int attempts) { STORAGE.maxDispenseAttempts = attempts; },
-        WIDGET_RANGE(STORAGE.maxDispenseAttempts.get(), 1U, 1U, 10U, "%d")),
+        [](unsigned int attempts) { Storage::instance->maxDispenseAttempts.set(attempts); },
+        WIDGET_RANGE(Storage::instance->maxDispenseAttempts.get(), 1U, 1U, 10U, "%d")),
     //         |>--------------+|
     ITEM_WIDGET("wait",
-        [](unsigned int time) { STORAGE.removalWaitTime = time; },
-        WIDGET_RANGE(STORAGE.removalWaitTime.get(), 250U, 1000U, 10000U, "%d ms")),
+        [](unsigned int time) { Storage::instance->removalWaitTime.set(time); },
+        WIDGET_RANGE(Storage::instance->removalWaitTime.get(), 250U, 1000U, 10000U, "%d ms")),
     //         |>--------------+|
     ITEM_WIDGET("block",
-        [](float current) { STORAGE.motorBlockCurrent = current; },
-        WIDGET_RANGE(STORAGE.motorBlockCurrent.get(), 0.05f, 0.0f, 2.0f, "%.2f A")),
+        [](float current) { Storage::instance->motorBlockCurrent.set(current); },
+        WIDGET_RANGE(Storage::instance->motorBlockCurrent.get(), 0.05f, 0.0f, 2.0f, "%.2f A")),
     //         |>--------------+|
     ITEM_WIDGET("inrush",
-        [](unsigned int time) { STORAGE.motorBlockInrushWait = time; },
-        WIDGET_RANGE(STORAGE.motorBlockInrushWait.get(), 5U, 0U, 250U, "%d ms")),
+        [](unsigned int time) { Storage::instance->motorBlockInrushWait.set(time); },
+        WIDGET_RANGE(Storage::instance->motorBlockInrushWait.get(), 5U, 0U, 250U, "%d ms")),
     //         |>--------------+|
     ITEM_SUBMENU("Coin config", coinScreen),
     ITEM_BACK()

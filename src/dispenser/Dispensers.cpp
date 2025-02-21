@@ -3,19 +3,29 @@
 // Initialize the static instance pointer
 Dispensers *const Dispensers::instance = new Dispensers(
     // clang-format off
-    new Dispenser(Motorshield::channelA,
-              new EasyLed(DISPENSER_A_REMOVAL_LED_PIN, EasyLed::ActiveLevel::High),
-              new Switch(DISPENSER_A_EMPTY_SWITCH_PIN),
-              new Switch(DISPENSER_A_MIN_LIMIT_SWITCH_PIN),
-              new Switch(DISPENSER_A_MAX_LIMIT_SWITCH_PIN),
-              DISPENSER_A_MAX_LIMIT_SWITCH2_PIN > 0 ? new Switch(DISPENSER_A_MAX_LIMIT_SWITCH2_PIN) : nullptr
+    new Dispenser("A", Motorshield::channelA,
+              new EasyLed(DISPENSER_A_REMOVAL_LED_PIN, EasyLed::ActiveLevel::Low),
+              new Switch(DISPENSER_A_EMPTY_SWITCH_PIN, DISPENSER_A_EMPTY_SWITCH_MODE, DISPENSER_A_EMPTY_SWITCH_POLARITY),
+              new Switch(DISPENSER_A_MIN_LIMIT_SWITCH_PIN, DISPENSER_A_MIN_LIMIT_SWITCH_MODE, DISPENSER_A_MIN_LIMIT_SWITCH_POLARITY),
+              new Switch(DISPENSER_A_MAX_LIMIT_SWITCH_PIN, DISPENSER_A_MAX_LIMIT_SWITCH_MODE, DISPENSER_A_MAX_LIMIT_SWITCH_POLARITY),
+              DISPENSER_A_MAX_LIMIT_SWITCH2_PIN > -1
+                  ? new Switch(DISPENSER_A_MAX_LIMIT_SWITCH2_PIN, DISPENSER_A_MAX_LIMIT_SWITCH2_MODE, DISPENSER_A_MAX_LIMIT_SWITCH2_POLARITY)
+                  : nullptr,
+              DISPENSER_A_MANUAL_SWITCH_PIN > -1
+                  ? new Switch(DISPENSER_A_MANUAL_SWITCH_PIN, DISPENSER_A_MANUAL_SWITCH_MODE, DISPENSER_A_MANUAL_SWITCH_POLARITY)
+                  : nullptr
     ),
-    new Dispenser(Motorshield::channelB,
-              new EasyLed(DISPENSER_B_REMOVAL_LED_PIN, EasyLed::ActiveLevel::High),
-              new Switch(DISPENSER_B_EMPTY_SWITCH_PIN),
-              new Switch(DISPENSER_B_MIN_LIMIT_SWITCH_PIN),
-              new Switch(DISPENSER_B_MAX_LIMIT_SWITCH_PIN),
-              DISPENSER_B_MAX_LIMIT_SWITCH2_PIN > 0 ? new Switch(DISPENSER_B_MAX_LIMIT_SWITCH2_PIN) : nullptr
+    new Dispenser("B", Motorshield::channelB,
+              new EasyLed(DISPENSER_B_REMOVAL_LED_PIN, EasyLed::ActiveLevel::Low),
+              new Switch(DISPENSER_B_EMPTY_SWITCH_PIN, DISPENSER_B_EMPTY_SWITCH_MODE, DISPENSER_B_EMPTY_SWITCH_POLARITY),
+              new Switch(DISPENSER_B_MIN_LIMIT_SWITCH_PIN, DISPENSER_B_MIN_LIMIT_SWITCH_MODE, DISPENSER_B_MIN_LIMIT_SWITCH_POLARITY),
+              new Switch(DISPENSER_B_MAX_LIMIT_SWITCH_PIN, DISPENSER_B_MAX_LIMIT_SWITCH_MODE, DISPENSER_B_MAX_LIMIT_SWITCH_POLARITY),
+              DISPENSER_B_MAX_LIMIT_SWITCH2_PIN > -1
+                  ? new Switch(DISPENSER_B_MAX_LIMIT_SWITCH2_PIN, DISPENSER_B_MAX_LIMIT_SWITCH2_MODE, DISPENSER_B_MAX_LIMIT_SWITCH2_POLARITY)
+                  : nullptr,
+              DISPENSER_B_MANUAL_SWITCH_PIN > -1
+                  ? new Switch(DISPENSER_B_MANUAL_SWITCH_PIN, DISPENSER_B_MANUAL_SWITCH_MODE, DISPENSER_B_MANUAL_SWITCH_POLARITY)
+                  : nullptr
     )  // clang-format on
 );
 
@@ -23,6 +33,8 @@ Dispensers::Dispensers(Dispenser *const dispenserA, Dispenser *const dispenserB)
     : dispenserA(dispenserA), dispenserB(dispenserB), activeDispenser(nullptr) {}
 
 void Dispensers::begin() {
+    dispenserA->begin();
+    dispenserB->begin();
     // Set the first ready dispenser as active
     if (dispenserA->isReady()) {
         activeDispenser = dispenserA;

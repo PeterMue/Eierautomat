@@ -6,19 +6,23 @@
 #include <avdweb_Switch.h>
 
 #include "motor/Motorshield.h"
+#include "debug.h"
 
 class Dispenser {
    public:
     enum State { IDLE, DISPENSE, RETURN, REMOVAL, RECOVER, ERROR };
     struct Info {
+        String id;
         unsigned int dispensedItems;
     };
 
    public:
-    Dispenser(Motor *const motor, EasyLed *indicatorLed, Switch *emptySwitch, Switch *minLimitSwitch,
-              Switch *maxLimitSwitch, Switch *maxLimitSwitch2);
+    Dispenser(String id, Motor *const motor, EasyLed *indicatorLed, Switch *emptySwitch, Switch *minLimitSwitch,
+              Switch *maxLimitSwitch, Switch *maxLimitSwitch2, Switch *manualSwitch);
+
+    void begin();
     void loop();
-    void dispense();
+    void dispense(bool force = false);
 
     bool isError();
     void reset();
@@ -31,14 +35,17 @@ class Dispenser {
     Info getInfo();
 
    private:
-    const unsigned short maxDispenseAttempts;
-    const float dispenserSpeed;
+    unsigned short maxDispenseAttempts;
+    float dispenserSpeed;
+
+    const String id;
 
     Motor *const motor;
     Switch *const minLimitSwitch;
     Switch *const maxLimitSwitch;
     Switch *const maxLimitSwitch2;
     Switch *const emptySwitch;
+    Switch *const manualSwitch;
     EasyLed *const removalLed;
 
     State state;

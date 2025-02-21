@@ -2,19 +2,30 @@
 
 #include "Storage.h"
 
-Dispenser::Dispenser(Motor *const motor, EasyLed *removalLed, Switch *emptySwitch, Switch *minLimitSwitch,
-                     Switch *maxLimitSwitch, Switch *maxLimitSwitch2 = nullptr)
-    : maxDispenseAttempts(STORAGE.maxDispenseAttempts.get()),
-      dispenserSpeed(STORAGE.dispenserSpeed.get()),
+Dispenser::Dispenser(String id, Motor *const motor, EasyLed *removalLed,
+                     Switch *emptySwitch, Switch *minLimitSwitch,
+                     Switch *maxLimitSwitch, Switch *maxLimitSwitch2 = nullptr,
+                     Switch *manualSwitch = nullptr)
+    : maxDispenseAttempts(3),
+      dispenserSpeed(1.0),
+      id(id),
       motor(motor),
       minLimitSwitch(minLimitSwitch),
       maxLimitSwitch(maxLimitSwitch),
       maxLimitSwitch2(maxLimitSwitch2),
       emptySwitch(emptySwitch),
+      manualSwitch(manualSwitch),
       removalLed(removalLed),
       state(IDLE) {
     this->removalLed->off();
-    this->motor->configureBlockDetection(STORAGE.motorBlockCurrent.get(), STORAGE.motorBlockInrushWait.get());
+}
+
+void Dispenser::begin() {
+    this->motor->configureBlockDetection(
+        Storage::instance->motorBlockCurrent.get(),
+        Storage::instance->motorBlockInrushWait.get());
+    this->dispenserSpeed = Storage::instance->dispenserSpeed.get();
+    this->maxDispenseAttempts = Storage::instance->maxDispenseAttempts.get();
 }
 
 void Dispenser::updateComponents() {
@@ -24,7 +35,11 @@ void Dispenser::updateComponents() {
         maxLimitSwitch2->poll();
     }
     emptySwitch->poll();
+    if ((nullptr != manualSwitch)) {
+        manualSwitch->poll();
+    }
     motor->loop();
+    timer.tick();
 }
 
 void Dispenser::loop() {
@@ -44,18 +59,27 @@ void Dispenser::loop() {
             } else if (blockDetected) {
                 motor->stop();
                 state = ERROR;
+                Debug::dispenserStateTransition("RECOVER", state,
+                                                "Block detected");
             } else {
                 motor->stop();
-                state = (++dispenseAttempt > maxDispenseAttempts) ? ERROR : DISPENSE;
+                state = (++dispenseAttempt > maxDispenseAttempts) ? ERROR
+                                                                  : DISPENSE;
+                Debug::dispenserStateTransition(
+                    "RECOVER", state, "Attempt " + String(dispenseAttempt));
             }
             break;
         case DISPENSE:
             if (isMaxLimitSwitchOn()) {
                 motor->stop();
                 state = RETURN;
+                Debug::dispenserStateTransition("DISPENSE", state,
+                                                "Max limit switch on");
             } else if (blockDetected) {
                 motor->stop();
                 state = RECOVER;
+                Debug::dispenserStateTransition("DISPENSE", state,
+                                                "Block detected");
             } else {
                 motor->enable(Motor::Direction::CW, dispenserSpeed);
             }
@@ -64,9 +88,13 @@ void Dispenser::loop() {
             if (isMinLimitSwitchOn()) {
                 motor->stop();
                 state = REMOVAL;
+                Debug::dispenserStateTransition("RETURN", state,
+                                                "Min limit switch on");
             } else if (blockDetected) {
                 motor->stop();
                 state = ERROR;
+                Debug::dispenserStateTransition("RETURN", state,
+                                                "Block detected");
             } else {
                 motor->enable(Motor::Direction::CCW, dispenserSpeed);
             }
@@ -74,32 +102,48 @@ void Dispenser::loop() {
         case REMOVAL:
             removalLed->on();
             timer.in(
-                STORAGE.removalWaitTime.get(),
+                Storage::instance->removalWaitTime.get(),
                 [](Dispenser *self) -> bool {
                     self->removalLed->off();
                     self->state = IDLE;
+                    Debug::dispenserStateTransition("REMOVAL", self->state,
+                                                    "Removal Timeout");
                     return false;
                 },
                 this);
             break;
         case IDLE:
             dispenseAttempt = 0;
-            STORAGE.soldItems += 1;
+            if (nullptr != manualSwitch) {
+                if (manualSwitch->singleClick()) {
+                    dispense();
+                    break;
+                } else if (manualSwitch->longPress()) {
+                    dispense(true);
+                    break;
+                }
+            }
         default:
             if (!isMinLimitSwitchOn()) {
                 motor->enable(Motor::Direction::CCW, dispenserSpeed);
             } else {
                 motor->stop();
-                state = IDLE;
+                if (state != IDLE) {
+                    state = IDLE;
+                    Debug::dispenserStateTransition("IDLE", state,
+                                                    "Min limit switch on");
+                }
             }
             break;
     }
 }
 
-void Dispenser::dispense() {
-    if (state == IDLE && !emptySwitch->on()) {
+void Dispenser::dispense(bool force) {
+    if (force || (state == IDLE && !emptySwitch->on())) {
         dispenseAttempt = 1;
         state = DISPENSE;
+        Debug::dispenserStateTransition(
+            "IDLE", state, "Dispense requested on dispenser " + id);
     }
 }
 
@@ -113,10 +157,13 @@ void Dispenser::reset() { state = IDLE; }
 
 Dispenser::State Dispenser::getState() { return state; }
 
-Dispenser::Info Dispenser::getInfo() { return {STORAGE.soldItems.get()}; }
+Dispenser::Info Dispenser::getInfo() {
+    return {id, Storage::instance->soldItems.get()};
+}
 
 bool Dispenser::isMinLimitSwitchOn() { return minLimitSwitch->on(); }
 
 bool Dispenser::isMaxLimitSwitchOn() {
-    return maxLimitSwitch->on() || (nullptr != maxLimitSwitch2 && maxLimitSwitch2->on());
+    return maxLimitSwitch->on() ||
+           (nullptr != maxLimitSwitch2 && maxLimitSwitch2->on());
 }

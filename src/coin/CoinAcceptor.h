@@ -15,16 +15,20 @@ class CoinAcceptor {
     unsigned int getBalance();
     bool withdraw(unsigned int amount);
 
+    void enable();
+    void disable();
+
    private:
-    CoinAcceptor(uint8_t pulsePin);
+    CoinAcceptor(uint8_t pulsePin, uint8_t enablePin);
 
     uint8_t pulsePin;
+    uint8_t enablePin;
     unsigned int pulseMaxDelay;
     volatile unsigned int pulses;
     volatile unsigned long lastPulseMillis;
     volatile unsigned int lastPulseCount;
     unsigned int balance;
     unsigned int values[7];
-
+    volatile bool enabled;
     static void pulseHandler();
 };
