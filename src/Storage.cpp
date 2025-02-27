@@ -8,7 +8,7 @@ Storage::Storage() :
           maxDispenseAttempts(dispenserSpeed.nextAddress(), 3),
           removalWaitTime(maxDispenseAttempts.nextAddress(), 3000),
           // motor current
-          motorBlockCurrent(removalWaitTime.nextAddress(), 0.95),
+          motorBlockCurrent(removalWaitTime.nextAddress(), 1.65),
           motorBlockInrushWait(motorBlockCurrent.nextAddress(), 200),
           // coin pulses
           coinPulseMaxDelay(motorBlockCurrent.nextAddress(), 250),
@@ -21,7 +21,7 @@ Storage::Storage() :
           coin6value(coin5value.nextAddress(), 0),
           // price
           price(coin6value.nextAddress(), 350),
-          balanceResetDelay(price.nextAddress(), 60),
+          balanceResetDelay(price.nextAddress(), 25),
           // statistics
           sold(balanceResetDelay.nextAddress(), 0),
           total(sold.nextAddress(), 0)
