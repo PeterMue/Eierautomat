@@ -30,7 +30,7 @@ void CoinAcceptor::begin() {
 
     enable();
 
-    Debug::log("Coin acceptor initialized");
+    Debug::log("Coin acceptor initialized: maxDelay: " + String(pulseMaxDelay) + ", balance reset: " + String(Storage::instance->balanceResetDelay.get() * 1000));
     Debug::log("Coins: [1] " + String(values[1]) + " ct, [2] " + String(values[2]) + " ct, [3] " + String(values[3]) + " ct, [4] " + String(values[4]) + " ct, [5] " + String(values[5]) + " ct, [6] " + String(values[6]) + " ct");
 }
 
@@ -42,7 +42,9 @@ void CoinAcceptor::pulseHandler() {
 }
 
 void CoinAcceptor::loop() {
-    timer.tick();
+    balanceResetTimer.tick();
+    enableTimer.tick();
+
     unsigned long currentMillis = millis();
     if(enabledInternal) {
         noInterrupts();
@@ -61,15 +63,18 @@ void CoinAcceptor::loop() {
 
 void CoinAcceptor::scheduleBalanceReset() {
     if(balanceResetTask  != nullptr){
-        timer.cancel(balanceResetTask);
+        Debug::log("Cancel active balanceResetTask");
+        balanceResetTimer.cancel(balanceResetTask);
+        balanceResetTask = nullptr;
     }
     unsigned int delay = Storage::instance->balanceResetDelay.get() * 1000;
     if(delay == 0) {
         return;
     }
-    balanceResetTask = timer.in(delay, [](CoinAcceptor *self) -> bool {
-        self->withdraw(self->getBalance());
+    Debug::log("Schedule reset in " + String(delay) + " ms");
+    balanceResetTask = balanceResetTimer.in(delay, [](CoinAcceptor *self) -> bool {
         Debug::log("Balance reset after timeout");
+        self->withdraw(self->getBalance());
         return false;
     }, this);   
 }
@@ -91,9 +96,9 @@ void CoinAcceptor::enable() {
     this->enabled = true; 
     digitalWrite(enablePin, HIGH);
     if(enableTask != nullptr) {
-        timer.cancel(enableTask);
+        enableTimer.cancel(enableTask);
     }
-    enableTask = this->timer.in(COIN_ACCEPTOR_INIT_DELAY, [](CoinAcceptor *self) -> bool {
+    enableTask = this->enableTimer.in(COIN_ACCEPTOR_INIT_DELAY, [](CoinAcceptor *self) -> bool {
         self->pulses = 0;
         self->enabledInternal = true;
         Debug::log("Coin pulse handler attached");

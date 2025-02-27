@@ -33,9 +33,11 @@ class CoinAcceptor {
 
     bool enabled;
 
-    Timer<2, millis, CoinAcceptor *> timer;
-    Timer<2, millis, CoinAcceptor *>::Task balanceResetTask;
-    Timer<2, millis, CoinAcceptor *>::Task enableTask;
+    Timer<10, millis, CoinAcceptor *> balanceResetTimer;
+    Timer<10, millis, CoinAcceptor *>::Task balanceResetTask;
+
+    Timer<10, millis, CoinAcceptor *> enableTimer;
+    Timer<10, millis, CoinAcceptor *>::Task enableTask;
 
     void scheduleBalanceReset();
 
