@@ -58,7 +58,10 @@ void Dispensers::loop() {
 }
 
 Dispenser *const Dispensers::dispense() {
-    if (activeDispenser != nullptr) {
+    if(nullptr == activeDispenser || !activeDispenser->isReady()) {
+        swap();
+    }
+    if (nullptr != activeDispenser) {
         activeDispenser->dispense();
         return activeDispenser;
     }
@@ -66,12 +69,17 @@ Dispenser *const Dispensers::dispense() {
 }
 
 void Dispensers::swap() {
-    if (activeDispenser == dispenserA && dispenserB->isReady()) {
+    if(nullptr == activeDispenser) {
+        activeDispenser = dispenserA->isReady() ? dispenserA : dispenserB->isReady() ? dispenserB : nullptr;
+        Debug::log("Swap dispenser: <none> -> " + (activeDispenser == nullptr ? "<none>" : activeDispenser->getInfo().id));
+    } else if (activeDispenser == dispenserA && dispenserB->isReady()) {
         activeDispenser = dispenserB;
+        Debug::log("Swap dispenser: A -> " + (activeDispenser == nullptr ? "<none>" : activeDispenser->getInfo().id));
     } else if (activeDispenser == dispenserB && dispenserA->isReady()) {
         activeDispenser = dispenserA;
+        Debug::log("Swap dispenser: B -> " + (activeDispenser == nullptr ? "<none>" : activeDispenser->getInfo().id));
     } else {
-        activeDispenser = nullptr;
+        Debug::log("Swap dispenser: no swap");
     }
 }
 

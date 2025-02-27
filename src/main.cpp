@@ -77,7 +77,11 @@ void loop() {
                     activeDispenser = dispensers->dispense();
                     state = DISPENSING;
                     Debug::stateTransition("AWAITING_PAYMENT", state, "Withdraw successful");
+                    Debug::log("Dispensing item on: " + String(nullptr == activeDispenser ? "<nullptr>" : activeDispenser->getInfo().id));
                 }
+            } else if(balance <= 0) {
+                state = IDLE;
+                Debug::stateTransition("AWAITING_PAYMENT", state, "Balance <= 0");
             }
             break;
         case DISPENSING:
@@ -106,12 +110,19 @@ void loop() {
                         display->setText("Entnahme");
                         break;
                     case Dispenser::ERROR:
+                        Debug::log("Error dispensing!");
+                        if(dispensers->ready()) {
+                            dispensers->swap();
+                            activeDispenser = dispensers->dispense();
+                            state = DISPENSING;
+                            break;
+                        }
                     default:
                         state = OUT_OF_ORDER;
                         Debug::stateTransition("DISPENSING", state, "Dispenser error");
                         break;
                 }
-                if(activeDispenser->getState() == Dispenser::REMOVAL) {
+                if(nullptr != activeDispenser && activeDispenser->getState() == Dispenser::REMOVAL) {
                     display->enableProgressIndicator();
                 } else {
                     display->disableProgressIndicator();
